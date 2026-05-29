@@ -2,13 +2,23 @@ import { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import Earth from './components/Earth';
 import UIOverlay from './components/UIOverlay';
-import { Location, WeatherLayer, MOCK_LOCATIONS, ClimateFactors, MapType } from './types';
+import { Location, WeatherLayer, MOCK_LOCATIONS, ClimateFactors, MapType, ViewMode, WindOptions } from './types';
 
 export default function App() {
   const [activeLayer, setActiveLayer] = useState<WeatherLayer>('clouds');
   const [mapType, setMapType] = useState<MapType>('default');
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('globe');
+  const [heatmapIntensity, setHeatmapIntensity] = useState<number>(0.8);
   const [climateFactors, setClimateFactors] = useState<ClimateFactors>({ seaLevelRise: false, globalWarming: false });
+  const [windOptions, setWindOptions] = useState<WindOptions>({
+    showStreamlines: true,
+    particleDensity: 0.8,
+    speedIntensity: 1.0,
+    vectorVisibility: true,
+    opacity: 0.8,
+    mode: 'ultra'
+  });
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [dynamicLocations, setDynamicLocations] = useState<Location[]>([]);
 
   const handleSetSelectedLocation = (loc: Location | null) => {
@@ -29,6 +39,9 @@ export default function App() {
           <Earth 
             activeLayer={activeLayer} 
             mapType={mapType}
+            viewMode={viewMode}
+            heatmapOpacity={heatmapIntensity}
+            windOptions={windOptions}
             onLocationClick={handleSetSelectedLocation} 
             locations={allLocations}
             selectedLocationId={selectedLocation?.id}
@@ -43,6 +56,12 @@ export default function App() {
           setActiveLayer={setActiveLayer}
           mapType={mapType}
           setMapType={setMapType}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          heatmapIntensity={heatmapIntensity}
+          setHeatmapIntensity={setHeatmapIntensity}
+          windOptions={windOptions}
+          setWindOptions={setWindOptions}
           selectedLocation={selectedLocation}
           setSelectedLocation={handleSetSelectedLocation}
           climateFactors={climateFactors}

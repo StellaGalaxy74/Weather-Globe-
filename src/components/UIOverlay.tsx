@@ -1,6 +1,6 @@
-import { Location, WeatherLayer, MOCK_LOCATIONS, ClimateFactors } from '../types';
+import { Location, WeatherLayer, MOCK_LOCATIONS, ClimateFactors, MapType, ViewMode, WindOptions } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Search, Waves, ThermometerSun, Loader2, Sparkles, Sun, Cloud, CloudRain } from 'lucide-react';
+import { X, Search, Waves, ThermometerSun, Loader2, Sparkles, Sun, Cloud, CloudRain, Wind } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import AtmosphericGraph from './AtmosphericGraph';
 
@@ -13,9 +13,15 @@ interface UIProps {
   setClimateFactors: React.Dispatch<React.SetStateAction<ClimateFactors>>;
   mapType: MapType;
   setMapType: (type: MapType) => void;
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
+  heatmapIntensity: number;
+  setHeatmapIntensity: (v: number) => void;
+  windOptions: WindOptions;
+  setWindOptions: React.Dispatch<React.SetStateAction<WindOptions>>;
 }
 
-export default function UIOverlay({ activeLayer, setActiveLayer, selectedLocation, setSelectedLocation, climateFactors, setClimateFactors, mapType, setMapType }: UIProps) {
+export default function UIOverlay({ activeLayer, setActiveLayer, selectedLocation, setSelectedLocation, climateFactors, setClimateFactors, mapType, setMapType, viewMode, setViewMode, heatmapIntensity, setHeatmapIntensity, windOptions, setWindOptions }: UIProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Location[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -191,9 +197,17 @@ export default function UIOverlay({ activeLayer, setActiveLayer, selectedLocatio
 
   const layers: { id: WeatherLayer; label: string }[] = [
     { id: 'temperature', label: 'Temperature Heatmap' },
-    { id: 'pressure', label: 'Atmospheric P.' },
+    { id: 'wind', label: 'Wind Patterns' },
+    { id: 'rainfall', label: 'Rainfall & Precipitation' },
     { id: 'clouds', label: 'Cloud Density' },
     { id: 'humidity', label: 'Humidity' },
+    { id: 'pressure', label: 'Atmospheric Pressure' },
+    { id: 'air_quality', label: 'Air Quality (AQI)' },
+    { id: 'storms', label: 'Storm Systems' },
+    { id: 'snow', label: 'Snow & Ice' },
+    { id: 'uv_index', label: 'UV Index' },
+    { id: 'ocean_current', label: 'Ocean Currents' },
+    { id: 'earthquakes', label: 'Seismic Activity' },
   ];
 
   return (
@@ -260,6 +274,23 @@ export default function UIOverlay({ activeLayer, setActiveLayer, selectedLocatio
         {/* Left Controls Panel */}
         <div className="w-80 pl-8 pb-8 pt-4 flex flex-col justify-start gap-4 z-20 pointer-events-auto hidden md:flex overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="space-y-1 mb-4 flex-shrink-0">
+            <span className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Planetary Scale</span>
+            <div className="h-[1px] w-12 bg-[#38BDF8]"></div>
+          </div>
+          
+          <div className="flex bg-[#0F172A]/80 border border-white/10 rounded-lg p-1 flex-shrink-0 mb-4">
+            {(['globe', 'map'] as ViewMode[]).map(mode => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`flex-1 py-1.5 text-[10px] uppercase font-bold rounded-md transition-all ${viewMode === mode ? 'bg-[#38BDF8] text-[#050816]' : 'text-slate-400 hover:text-white'}`}
+              >
+                {mode === 'globe' ? '🌐 GLOBE' : '🗺️ PROJECTION'}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-1 mb-4 flex-shrink-0">
             <span className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Map Topology</span>
             <div className="h-[1px] w-12 bg-[#38BDF8]"></div>
           </div>
@@ -312,38 +343,100 @@ export default function UIOverlay({ activeLayer, setActiveLayer, selectedLocatio
                       <div className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold text-center border-b border-white/5 pb-2 mb-1">Thermal Scale</div>
                       <div className="flex flex-col gap-2.5 px-1 py-1">
                         <div className="flex items-center justify-between text-[11px] font-mono text-white/80">
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-gradient-to-br from-[#800000] to-[#500000] shadow-[0_0_8px_rgba(255,0,0,0.2)]"></div><span>Dark Red</span></div>
+                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-[#DC2626]"></div><span>Extreme Heat</span></div>
                           <span className="text-white/90 font-semibold">&gt; 45°C</span>
                         </div>
                         <div className="flex items-center justify-between text-[11px] font-mono text-white/80">
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-gradient-to-br from-[#FF0000] to-[#B00000]"></div><span>Red</span></div>
+                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-[#F97316]"></div><span>Hot</span></div>
                           <span className="text-white/90">35°C to 45°C</span>
                         </div>
                         <div className="flex items-center justify-between text-[11px] font-mono text-white/80">
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-gradient-to-br from-[#FF8000] to-[#CC6600]"></div><span>Orange</span></div>
+                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-[#FACC15]"></div><span>Warm</span></div>
                           <span className="text-white/90">20°C to 35°C</span>
                         </div>
                         <div className="flex items-center justify-between text-[11px] font-mono text-white/80">
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-gradient-to-br from-[#FFFF00] to-[#CCCC00]"></div><span>Yellow</span></div>
+                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-[#22C55E]"></div><span>Mild</span></div>
                           <span className="text-white/90">10°C to 20°C</span>
                         </div>
                         <div className="flex items-center justify-between text-[11px] font-mono text-white/80">
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-gradient-to-br from-[#00FF00] to-[#00CC00]"></div><span>Green</span></div>
+                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-[#06B6D4]"></div><span>Cool</span></div>
                           <span className="text-white/90">0°C to 10°C</span>
                         </div>
                         <div className="flex items-center justify-between text-[11px] font-mono text-white/80">
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-gradient-to-br from-[#00FFFF] to-[#00CCCC]"></div><span>Cyan</span></div>
+                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-[#1D4ED8]"></div><span>Cold</span></div>
                           <span className="text-white/90">-15°C to 0°C</span>
                         </div>
                         <div className="flex items-center justify-between text-[11px] font-mono text-white/80">
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-gradient-to-br from-[#0080FF] to-[#0066CC]"></div><span>Light Blue</span></div>
-                          <span className="text-white/90">-30°C to -15°C</span>
-                        </div>
-                        <div className="flex items-center justify-between text-[11px] font-mono text-white/80">
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-gradient-to-br from-[#000080] to-[#000050] shadow-[0_0_8px_rgba(0,0,255,0.2)]"></div><span>Dark Blue</span></div>
-                          <span className="text-white/90">&lt; -30°C</span>
+                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-[#2E1065]"></div><span>Ext. Cold</span></div>
+                          <span className="text-white/90">&lt; -15°C</span>
                         </div>
                       </div>
+                      
+                      <div className="mt-2 border-t border-white/5 pt-3">
+                         <div className="flex justify-between text-[10px] mb-2 font-mono text-white/70">
+                            <span>Opacity</span>
+                            <span>{Math.round(heatmapIntensity * 100)}%</span>
+                         </div>
+                         <input type="range" min="0" max="1" step="0.05" value={heatmapIntensity} onChange={e => setHeatmapIntensity(parseFloat(e.target.value))} className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#38BDF8] [&::-webkit-slider-thumb]:rounded-full" />
+                      </div>
+                        </div>
+                      </motion.div>
+                    )}
+                    {isActive && layer.id === 'wind' && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-4 mt-1 bg-[#0F172A]/80 border border-white/5 rounded-xl flex flex-col gap-3 backdrop-blur-md">
+                          <div className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold text-center border-b border-white/5 pb-2 mb-1">Wind Controls</div>
+                          
+                          <div className="flex bg-[#0F172A]/80 border border-white/10 rounded-lg p-1">
+                            {(['low', 'medium', 'ultra'] as const).map(mode => (
+                              <button
+                                key={mode}
+                                onClick={() => {
+                                  if (mode === 'ultra') setWindOptions(p => ({ ...p, mode, particleDensity: 1.5, speedIntensity: 1.2, vectorVisibility: true, opacity: 1.0 }));
+                                  else if (mode === 'medium') setWindOptions(p => ({ ...p, mode, particleDensity: 0.8, speedIntensity: 1.0, vectorVisibility: false, opacity: 0.8 }));
+                                  else setWindOptions(p => ({ ...p, mode, particleDensity: 0.4, speedIntensity: 0.8, vectorVisibility: false, opacity: 0.6 }));
+                                }}
+                                className={`flex-1 py-1 text-[10px] uppercase font-bold rounded-md transition-all ${windOptions.mode === mode ? 'bg-[#38BDF8] text-[#050816]' : 'text-slate-400 hover:text-white'}`}
+                              >
+                                {mode}
+                              </button>
+                            ))}
+                          </div>
+                          
+                          <label className="flex items-center gap-2 cursor-pointer mt-1">
+                            <input type="checkbox" checked={windOptions.showStreamlines} onChange={e => setWindOptions(p => ({ ...p, showStreamlines: e.target.checked }))} className="accent-[#38BDF8] h-3 w-3" />
+                            <span className="text-[11px] font-mono text-white/80">Streamlines</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={windOptions.vectorVisibility} onChange={e => setWindOptions(p => ({ ...p, vectorVisibility: e.target.checked }))} className="accent-[#38BDF8] h-3 w-3" />
+                            <span className="text-[11px] font-mono text-white/80">Vector Flow</span>
+                          </label>
+                          
+                          <div className="mt-1">
+                             <div className="flex justify-between text-[10px] mb-1 font-mono text-white/70">
+                                <span>Density</span><span>{Math.round(windOptions.particleDensity * 100)}%</span>
+                             </div>
+                             <input type="range" min="0.1" max="2.0" step="0.1" value={windOptions.particleDensity} onChange={e => setWindOptions(p => ({ ...p, particleDensity: parseFloat(e.target.value)}))} className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#38BDF8] [&::-webkit-slider-thumb]:rounded-full" />
+                          </div>
+                          
+                          <div className="mt-1">
+                             <div className="flex justify-between text-[10px] mb-1 font-mono text-white/70">
+                                <span>Intensity (Speed)</span><span>{Math.round(windOptions.speedIntensity * 100)}%</span>
+                             </div>
+                             <input type="range" min="0.1" max="3.0" step="0.1" value={windOptions.speedIntensity} onChange={e => setWindOptions(p => ({ ...p, speedIntensity: parseFloat(e.target.value)}))} className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#38BDF8] [&::-webkit-slider-thumb]:rounded-full" />
+                          </div>
+
+                          <div className="mt-1 border-t border-white/5 pt-3">
+                             <div className="flex justify-between text-[10px] mb-1 font-mono text-white/70">
+                                <span>Opacity</span><span>{Math.round(windOptions.opacity * 100)}%</span>
+                             </div>
+                             <input type="range" min="0" max="1" step="0.05" value={windOptions.opacity} onChange={e => setWindOptions(p => ({ ...p, opacity: parseFloat(e.target.value)}))} className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#38BDF8] [&::-webkit-slider-thumb]:rounded-full" />
+                          </div>
                         </div>
                       </motion.div>
                     )}

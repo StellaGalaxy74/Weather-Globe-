@@ -1,5 +1,6 @@
-export type WeatherLayer = 'temperature' | 'humidity' | 'clouds' | 'pressure';
+export type WeatherLayer = 'temperature' | 'wind' | 'rainfall' | 'clouds' | 'humidity' | 'pressure' | 'air_quality' | 'storms' | 'snow' | 'uv_index' | 'ocean_current' | 'earthquakes';
 export type MapType = 'default' | 'satellite' | 'terrain';
+export type ViewMode = 'globe' | 'map';
 
 export interface Location {
   id: string;
@@ -17,6 +18,15 @@ export interface Location {
 export interface ClimateFactors {
   seaLevelRise: boolean;
   globalWarming: boolean;
+}
+
+export interface WindOptions {
+  showStreamlines: boolean;
+  particleDensity: number;
+  speedIntensity: number;
+  opacity: number;
+  vectorVisibility: boolean;
+  mode: 'low' | 'medium' | 'ultra';
 }
 
 export const MOCK_LOCATIONS: Location[] = [
